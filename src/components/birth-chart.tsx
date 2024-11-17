@@ -1,9 +1,10 @@
 import React from "react";
 
-interface Planet {
+export interface Planet {
   name: string; // Planet name
   house: number; // 1 to 12 based on the house the planet is in
-  degrees: number; // Degrees within the house
+  sign: string; // Zodiac sign of the planet
+  degrees: number; // Degrees within the sign
 }
 
 interface ChartProps {
@@ -11,42 +12,47 @@ interface ChartProps {
 }
 
 const BirthChart: React.FC<ChartProps> = ({ data }) => {
-  // Map house numbers to their positions based on the SVG design
+  // Define house positions as per the provided coordinates
   const housePositions = {
-    1: { x: 320, y: 50 }, // Adjust coordinates as per the SVG
-    2: { x: 470, y: 120 },
-    3: { x: 550, y: 270 },
-    4: { x: 470, y: 420 },
-    5: { x: 320, y: 490 },
-    6: { x: 170, y: 420 },
-    7: { x: 90, y: 270 },
-    8: { x: 170, y: 120 },
-    9: { x: 320, y: 270 }, // Center diamond
-    10: { x: 370, y: 170 },
-    11: { x: 470, y: 270 },
-    12: { x: 370, y: 370 },
+    1: { x: 250, y: 100 },
+    2: { x: 120, y: 40 },
+    3: { x: 40, y: 130 },
+    4: { x: 120, y: 250 },
+    5: { x: 40, y: 370 },
+    6: { x: 120, y: 440 },
+    7: { x: 250, y: 360 },
+    8: { x: 370, y: 440 },
+    9: { x: 450, y: 370 },
+    10: { x: 370, y: 250 },
+    11: { x: 440, y: 130 },
+    12: { x: 370, y: 40 },
   };
+
+  // Group planets by house
+  const planetsByHouse = data.reduce<Record<number, Planet[]>>((acc, planet) => {
+    if (!acc[planet.house]) acc[planet.house] = [];
+    acc[planet.house].push(planet);
+    return acc;
+  }, {});
 
   return (
     <svg
-      width="643"
-      height="639"
-      viewBox="0 0 643 639"
+      width="500"
+      height="500"
+      viewBox="0 0 500 500"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Include your SVG paths and elements here */}
-      {/* For brevity, I'm including only the key structural elements */}
-      <rect width="638" height="638" transform="translate(1 1)" fill="white" />
-      {/* Diagonal Lines */}
-      <line x1="1" y1="1" x2="641" y2="638" stroke="black" />
-      <line x1="1" y1="638" x2="641" y2="1" stroke="black" />
-      {/* Cross Lines */}
-      <line x1="1" y1="319" x2="641" y2="319" stroke="black" />
-      <line x1="320" y1="1" x2="320" y2="638" stroke="black" />
-      {/* Central Diamond */}
+      {/* Outer Rectangle */}
+      <rect x="0" y="0" width="500" height="500" fill="white" stroke="black" />
+
+      {/* Diagonal Lines for Cross */}
+      <line x1="0" y1="0" x2="500" y2="500" stroke="black" />
+      <line x1="500" y1="0" x2="0" y2="500" stroke="black" />
+
+      {/* Diamond Shape */}
       <polygon
-        points="320,1 641,319 320,638 1,319"
+        points="250,0 500,250 250,500 0,250"
         stroke="black"
         fill="none"
         strokeWidth="2"
@@ -67,21 +73,22 @@ const BirthChart: React.FC<ChartProps> = ({ data }) => {
       ))}
 
       {/* Place Planets */}
-      {data.map((planet, index) => {
-        const housePosition = housePositions[planet.house];
+      {Object.entries(planetsByHouse).map(([house, planets]) => {
+        const housePosition = housePositions[Number(house)];
         if (!housePosition) return null;
-        return (
+
+        return planets.map((planet, index) => (
           <text
-            key={index}
+            key={`${house}-${index}`}
             x={housePosition.x}
-            y={housePosition.y + 20} // Offset below the house number
-            fontSize={14}
+            y={housePosition.y + 20 + index * 14} // Adjust vertical position for each planet
+            fontSize={12}
             textAnchor="middle"
             fill="blue"
           >
-            {planet.name} {planet.degrees}°
+            {planet.name.slice(0, 2)} {planet.degrees}°
           </text>
-        );
+        ));
       })}
     </svg>
   );
